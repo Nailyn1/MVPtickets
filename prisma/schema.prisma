@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum Status {
+  IN_PROGRESS
+  ANSWERED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  role      Role     @default(CLIENT)
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id             String @id @default(cuid())
+  text           String
+  status         Status @default(IN_PROGRESS)
+  managerComment String?
+
+  aiSummary  String?
+  aiCategory String?
+  aiPriority String?
+  aiNextStep String?
+
+  userId String
+  author User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
