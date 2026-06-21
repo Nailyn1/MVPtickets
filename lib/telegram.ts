@@ -43,7 +43,7 @@ ${priorityIcon} <b>Новая заявка #${shortId}</b>
 
 <b>Рекомендация:</b> ${ticket.aiNextStep || "Проверить вручную"}
 
-👉 <a href="${siteUrl}">Открыть панель управления</a>
+👉 <a href="https://mv-ptickets.vercel.app/dashboard">Открыть панель управления</a>
   `;
 
   // 2. Отправляем в Telegram
