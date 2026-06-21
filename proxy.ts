@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-  const user = request.cookies.get("user")?.value;
+  const userId = request.cookies.get("userId")?.value;
   const { pathname } = request.nextUrl;
 
-  if (!user && pathname !== "/login") {
+  if (!userId && pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (user && pathname === "/login") {
+  if (userId && pathname === "/login") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

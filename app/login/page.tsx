@@ -1,29 +1,27 @@
-"use client";
-
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { loginOrCreateUser } from "@/lib/services/user.service";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [userName, setUserName] = useState("");
+  async function login(formData: FormData) {
+    "use server";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    const name = String(formData.get("name") ?? "");
+    const role = String(formData.get("role") ?? "CLIENT");
+    const user = await loginOrCreateUser(name, role === "ADMIN");
 
-    const trimmedName = userName.trim();
+    const cookieStore = await cookies();
+    cookieStore.set("userId", user.id, {
+      path: "/",
+    });
 
-    if (!trimmedName) {
-      return;
-    }
-
-    document.cookie = `user=${trimmedName}; path=/`;
-    router.push("/");
+    redirect(user.role === "ADMIN" ? "/dashboard" : "/");
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 text-zinc-950">
       <form
-        onSubmit={handleSubmit}
+        action={login}
         className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 shadow-xl shadow-zinc-200/60"
       >
         <h1 className="text-3xl font-semibold">Представьтесь, пожалуйста</h1>
@@ -33,12 +31,24 @@ export default function LoginPage() {
         </label>
         <input
           id="userName"
+          name="name"
           type="text"
-          value={userName}
-          onChange={(event) => setUserName(event.target.value)}
           placeholder="Введите ваше имя"
           className="mt-3 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
         />
+
+        <label htmlFor="role" className="mt-6 block text-sm font-medium">
+          Роль
+        </label>
+        <select
+          id="role"
+          name="role"
+          defaultValue="CLIENT"
+          className="mt-3 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+        >
+          <option value="CLIENT">Клиент</option>
+          <option value="ADMIN">Администратор</option>
+        </select>
 
         <button
           type="submit"

@@ -1,14 +1,28 @@
-﻿"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getUserById } from "@/lib/services/user.service";
 
-export default function HomePage() {
-  const router = useRouter();
+async function logout() {
+  "use server";
 
-  function handleLogout() {
-    document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    router.push("/login");
+  const cookieStore = await cookies();
+  cookieStore.delete("userId");
+  redirect("/login");
+}
+
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const user = await getUserById(userId);
+
+  if (user.role === "ADMIN") {
+    redirect("/dashboard");
   }
 
   return (
@@ -34,13 +48,14 @@ export default function HomePage() {
             Мои заявки
           </Link>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="mt-6 rounded-xl px-4 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus:ring-4 focus:ring-zinc-200"
-        >
-          Выйти
-        </button>
+        <form action={logout} className="mt-6">
+          <button
+            type="submit"
+            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus:ring-4 focus:ring-zinc-200"
+          >
+            Выйти
+          </button>
+        </form>
       </section>
     </main>
   );
